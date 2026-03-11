@@ -183,7 +183,7 @@ This project demonstrates:
 
 ## 📬 Contact
 If you'd like to connect or discuss this project:
-- GitHub: https://github.com/lambros1234
+- GitHub: https://github.com/LamprosChalatsis
 - Email: lambroshalatsis154@gmail.com
 
 ## ⭐ Final Notes
