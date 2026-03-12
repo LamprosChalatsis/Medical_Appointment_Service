@@ -11,7 +11,7 @@ import PatientDashboard from "../pages/dashboard/PatientDashboard";
 import DoctorDashboard from "../pages/dashboard/DoctorDashboard";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import AdminAppointments from "../pages/admin/AdminAppointments";
-import SettingsPage from "../pages/settings/SettingsPage";
+import ProtectedRoute from "./ProtectedRoutes";
 
 export default function AppRoutes() {
   return (
@@ -19,16 +19,87 @@ export default function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/appointments" element={<AppointmentsList/>}/>
-      <Route path="/users" element={<UserList/>}/>
-      <Route path="/availability" element={<DoctorAvailabilityForm/>}/>
-      <Route path="/doctor-appointments" element={<DoctorAppointmentsList/>}/>
-      <Route path="/doctors" element={<DoctorList/>}/>
-      <Route path="/dashboard/patient" element={<PatientDashboard />} />
-      <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
-      <Route path="/dashboard/admin" element={<AdminDashboard />} />
-      <Route path="/admin/appointments" element={<AdminAppointments />} />
-      <Route path="/settings" element={<SettingsPage />} />
+
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_PATIENT"]}>
+            <AppointmentsList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+            <UserList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/availability"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_DOCTOR"]}>
+            <DoctorAvailabilityForm />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/doctor-appointments"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_DOCTOR"]}>
+            <DoctorAppointmentsList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/doctors"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_PATIENT"]}>
+            <DoctorList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/patient"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_PATIENT"]}>
+            <PatientDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/doctor"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_DOCTOR"]}>
+            <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/admin"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/appointments"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+            <AdminAppointments />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

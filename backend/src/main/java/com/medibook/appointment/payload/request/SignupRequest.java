@@ -111,7 +111,6 @@ public class SignupRequest {
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", role=" + role +
-                ", password='" + password + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", phone='" + phone + '\'' +

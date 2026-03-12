@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FailAlert from "../../components/FailAlert";
 import { Login } from "../../api/auth";
 
@@ -19,42 +19,28 @@ export default function LogIn() {
 
     if (!token || !role) return;
 
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const now = Date.now() / 1000;
-
-      if (payload.exp < now) {
-        localStorage.clear();
-        return;
-      }
-
-      // redirect only if token exists AND is valid
-      if (role === "ROLE_DOCTOR") navigate("/dashboard/doctor", { replace: true });
-      else if (role === "ROLE_PATIENT") navigate("/dashboard/patient", { replace: true });
-      else if (role === "ROLE_ADMIN") navigate("/dashboard/admin", { replace: true });
-
-    } catch {
-      localStorage.clear();
-    }
+    if (role === "ROLE_DOCTOR") navigate("/dashboard/doctor");
+    else if (role === "ROLE_PATIENT") navigate("/dashboard/patient");
+    else if (role === "ROLE_ADMIN") navigate("/dashboard/admin");
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-      
-    // Clear any previous login session
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    setErrorMessage("");
 
     try {
       const data = await Login(username, password);
+      const role = data.roles?.[0];
 
-      const role = data.roles[0];
-
-      if (role === "ROLE_DOCTOR") navigate("/dashboard/doctor");
-      else if (role === "ROLE_PATIENT") navigate("/dashboard/patient");
-      else if (role === "ROLE_ADMIN") navigate("/dashboard/admin");
-      else navigate("/");
-
+      if (role === "ROLE_DOCTOR") {
+        navigate("/dashboard/doctor");
+      } else if (role === "ROLE_PATIENT") {
+        navigate("/dashboard/patient");
+      } else if (role === "ROLE_ADMIN") {
+        navigate("/dashboard/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setErrorMessage(err.message || "Login failed");
     }
@@ -99,7 +85,7 @@ export default function LogIn() {
         </button>
 
         <p className="signup-link">
-          No account? <a href="/register">Sign up</a>
+          No account? <Link to="/register">Sign up</Link>
         </p>
       </form>
     </StyledWrapper>
