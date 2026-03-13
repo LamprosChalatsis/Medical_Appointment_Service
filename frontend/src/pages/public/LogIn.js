@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FailAlert from "../../components/FailAlert";
 import { Login } from "../../api/auth";
 
 export default function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
+
 
 
   useEffect(() => {
@@ -21,24 +23,16 @@ export default function LogIn() {
     if (role === "ROLE_DOCTOR") navigate("/dashboard/doctor");
     else if (role === "ROLE_PATIENT") navigate("/dashboard/patient");
     else if (role === "ROLE_ADMIN") navigate("/dashboard/admin");
-
   }, [navigate]);
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
     try {
       const data = await Login(username, password);
+      const role = data.roles?.[0];
 
-      // Store auth data
-      localStorage.setItem("token", data.accessToken);
-      localStorage.setItem("role", data.roles[0]); // store clean role
-      localStorage.setItem("username", data.username);
-
-      const role = data.roles[0];
-
-      // 🔹 Redirect based on role
       if (role === "ROLE_DOCTOR") {
         navigate("/dashboard/doctor");
       } else if (role === "ROLE_PATIENT") {
@@ -48,7 +42,6 @@ export default function LogIn() {
       } else {
         navigate("/");
       }
-
     } catch (err) {
       setErrorMessage(err.message || "Login failed");
     }
@@ -76,22 +69,32 @@ export default function LogIn() {
           />
         </div>
 
-        <div className="input-container">
+        <div className="input-container password-container">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          <button
+            type="button"
+            className="toggle-password"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
         </div>
+
+
 
         <button type="submit" className="submit">
           Sign in
         </button>
 
         <p className="signup-link">
-          No account? <a href="/register">Sign up</a>
+          No account? <Link to="/register">Sign up</Link>
         </p>
       </form>
     </StyledWrapper>
@@ -158,5 +161,24 @@ const StyledWrapper = styled.div`
 
   .signup-link a {
     text-decoration: underline;
+  }
+    .password-container {
+  position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .toggle-password:hover {
+    color: #111;
   }
 `;

@@ -4,7 +4,6 @@ const SPECIALTIES_URL = "/specialties";
 
 export const fetchSpecialties = async () => {
   const response = await api.get(SPECIALTIES_URL);
-  console.log("Fetched specialties:", response.data);
   return response.data;
 };
 
@@ -20,3 +19,21 @@ export const createSpecialty = async (name) => {
     throw err;
   }
 };
+
+export async function getAllSpecialties() {
+  const res = await api.get(SPECIALTIES_URL);
+  return res.data;
+}
+
+export async function getDoctorSpecialties() {
+  const res = await api.get(`${SPECIALTIES_URL}/doctor`);
+  return res.data;
+}
+
+export async function addSpecialty(id) {
+  return api.post(`${SPECIALTIES_URL}/doctor/${id}`);
+}
+
+export async function removeSpecialty(id) {
+  return api.delete(`${SPECIALTIES_URL}/doctor/${id}`);
+}

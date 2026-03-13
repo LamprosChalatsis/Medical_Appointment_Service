@@ -1,30 +1,28 @@
 package com.medibook.appointment.controllers;
 
-import com.medibook.appointment.config.SecurityUtils;
 import com.medibook.appointment.dto.AppointmentRequestDTO;
 import com.medibook.appointment.dto.AppointmentResponseDTO;
-import com.medibook.appointment.entities.*;
-import com.medibook.appointment.repositories.AppointmentRepository;
-import com.medibook.appointment.service.*;
+import com.medibook.appointment.service.AppointmentService;
+import com.medibook.appointment.service.UserDetailsImpl;
 import jakarta.validation.Valid;
+import jdk.jfr.Percentage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/appointment")
 public class AppointmentController {
     private final AppointmentService appointmentService;
-    private final AppointmentRepository appointmentRepository;
 
-
-    public AppointmentController(AppointmentService appointmentService, AppointmentRepository appointmentRepository) {
+    public AppointmentController(AppointmentService appointmentService) {
         this.appointmentService = appointmentService;
-        this.appointmentRepository = appointmentRepository;
     }
 
     @GetMapping("/admin/all")
@@ -41,51 +39,71 @@ public class AppointmentController {
 
     @PostMapping
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<?> createAppointment(@Valid @RequestBody AppointmentRequestDTO dto, Authentication authentication) {
+    public ResponseEntity<AppointmentResponseDTO> createAppointment(
+            @Valid @RequestBody AppointmentRequestDTO dto,
+            Authentication authentication
+    ) {
         String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
-        Appointment created = appointmentService.bookAppointment(dto, email);
+        AppointmentResponseDTO created = appointmentService.bookAppointment(dto, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @GetMapping("/{appointment_id}")
-    public ResponseEntity<AppointmentResponseDTO> getAppointment(@PathVariable Long appointment_id) {
-        return ResponseEntity.ok(appointmentService.getAppointmentResponseDTO(appointmentRepository.findById(appointment_id).get()));
+    @GetMapping("/{appointmentId}")
+    public ResponseEntity<AppointmentResponseDTO> getAppointment(@PathVariable Long appointmentId) {
+        return appointmentService.getAppointmentById(appointmentId)
+                .map(appointmentService::getAppointmentResponseDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{appointment_id}")
-    public ResponseEntity<Map<String, String>> updateAppointment(@PathVariable Long appointment_id, @Valid @RequestBody AppointmentRequestDTO dto) {
-        appointmentService.updateAppointment(appointment_id, dto);
+    @PutMapping("/{appointmentId}")
+    public ResponseEntity<Map<String, String>> updateAppointment(
+            @PathVariable Long appointmentId,
+            @Valid @RequestBody AppointmentRequestDTO dto
+    ) {
+        appointmentService.updateAppointment(appointmentId, dto);
         return ResponseEntity.ok(Map.of("message", "Appointment updated successfully!"));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{appointment_id}")
-    public ResponseEntity<Map<String, String>> deleteAppointment(@PathVariable Long appointment_id) {
-        appointmentService.deleteAppointmentById(appointment_id);
+    @DeleteMapping("/{appointmentId}")
+    public ResponseEntity<Map<String, String>> deleteAppointment(@PathVariable Long appointmentId) {
+        appointmentService.deleteAppointmentById(appointmentId);
         return ResponseEntity.ok(Map.of("message", "Appointment deleted successfully!"));
     }
-
-    @PatchMapping("/cancel/{appointment_id}")
-    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointment_id) {
-        appointmentService.cancelAppointment(appointment_id);
+    @PreAuthorize("hasRole('PATIENT')")
+    @PatchMapping("/cancel/{appointmentId}")
+    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId, Authentication authentication) {
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+        appointmentService.cancelAppointment(appointmentId, email);
         return ResponseEntity.ok("Appointment cancelled.");
     }
 
-    @PatchMapping("/confirm/{appointment_id}")
+    @PatchMapping("/doctor/cancel/{appointmentId}")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<String> confirmAppointment(@PathVariable Long appointment_id) {
-        appointmentService.confirmAppointment(appointment_id);
+    public ResponseEntity<String> doctorCancelAppointment(@PathVariable Long appointmentId, Authentication authentication) {
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+        appointmentService.doctorCancelAppointment(appointmentId, email);
+        return ResponseEntity.ok("Appointment cancelled by doctor.");
+    }
+
+    @PatchMapping("/confirm/{appointmentId}")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<String> confirmAppointment(
+            @PathVariable Long appointmentId,
+            Authentication authentication
+    ) {
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+        appointmentService.confirmAppointment(appointmentId, email);
         return ResponseEntity.ok("Appointment confirmed.");
     }
 
-    @GetMapping("/doctor/{doctor_id}")
-    public List<AppointmentResponseDTO> getAllAppointments(@PathVariable("doctor_id") Long doctorId, @RequestParam String date) {
-        LocalDate parsedDate = LocalDate.parse(date.trim()); // remove any extra spaces/newlines
+    @GetMapping("/doctor/{doctorId}")
+    public List<AppointmentResponseDTO> getAllAppointments(
+            @PathVariable Long doctorId,
+            @RequestParam String date
+    ) {
+        LocalDate parsedDate = LocalDate.parse(date.trim());
         return appointmentService.getAppointmentsForDoctorOnDate(doctorId, parsedDate);
     }
-
-
-    // Optional: Filtering
-
-
 }

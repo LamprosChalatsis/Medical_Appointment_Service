@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   getAppointments,
-  cancelAppointment,
+  cancelAppointmentByDoctor,
   confirmAppointment,
 } from "../../api/appointments";
 import LoadingSpinner from "../../components/Loading";
@@ -61,7 +61,7 @@ export default function DoctorAppointmentsList() {
 
   const handleCancel = async (appointmentId) => {
     try {
-      await cancelAppointment(appointmentId);
+      await cancelAppointmentByDoctor(appointmentId);
       updateStatus(appointmentId, "CANCELLED");
 
       setAlertTitle("Cancelled");

@@ -2,14 +2,52 @@
 # Backend (Spring Boot)
 # ======================
 
-backend/target/
-*.class
-*.jar
-*.log
-
-# IntelliJ / IDE
+# IDE Settings
 .idea/
-*.iml
+.eclipse/
+.classpath
+.project
+
+# Build Files
+target/
+out/
+
+# System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Dependency Directories
+bower_components/
+node_modules/
+
+# Environment Files
+.env
+application.properties placeholder=
+application.yml placeholder=
+application.properties.example
+
+# Logs
+*.log
+*.txt
+logs/
+
+# Build Tools
+.gradle/
+.m2/
+
+# Testing
+test-reports/
+coverage/
+
+# Temporary Files
+*.swp
+*.tmp
+*~
+.\#*
+
+# Backup Files
+*.bak
 
 # ======================
 # Frontend (React)
@@ -31,10 +69,3 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# ======================
-# OS / Editor
-# ======================
-
-.DS_Store
-Thumbs.db
-.vscode/

@@ -12,7 +12,7 @@ public class Specialty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotBlank
     @Column(unique = true)
@@ -24,7 +24,7 @@ public class Specialty {
 
     public Specialty() {}
 
-    public Specialty(List<Doctor_Profile> doctors, int id, String name) {
+    public Specialty(List<Doctor_Profile> doctors, Long id, String name) {
         this.doctors = doctors;
         this.id = id;
         this.name = name;
@@ -46,11 +46,11 @@ public class Specialty {
         this.name = name;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -153,20 +153,41 @@ export default function Header() {
                   </MenuButton>
 
                   <MenuItems className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-                    <MenuItem>
-                      {({ active }) => (
-                        <button
-                          onClick={handleLogout}
-                          className={classNames(
-                            active ? "bg-gray-50" : "",
-                            "block w-full text-left px-4 py-3 text-sm text-gray-700"
-                          )}
-                        >
-                          Sign out
-                        </button>
+
+                {/* Settings */}
+                <MenuItem>
+                  {({ focus }) => (
+                    <Link
+                      to="/settings"
+                      className={classNames(
+                        focus ? "bg-gray-50" : "",
+                        "block px-4 py-3 text-sm text-gray-700"
                       )}
-                    </MenuItem>
-                  </MenuItems>
+                    >
+                      Settings
+                    </Link>
+                  )}
+                </MenuItem>
+
+                {/* Divider */}
+                <div className="border-t border-gray-100" />
+
+                {/* Sign Out */}
+                <MenuItem>
+                  {({ focus }) => (
+                    <button
+                      onClick={handleLogout}
+                      className={classNames(
+                        focus ? "bg-gray-50" : "",
+                        "block w-full text-left px-4 py-3 text-sm text-gray-700"
+                      )}
+                    >
+                      Sign out
+                    </button>
+                  )}
+                </MenuItem>
+
+              </MenuItems>
                 </Menu>
               </>
             ) : (

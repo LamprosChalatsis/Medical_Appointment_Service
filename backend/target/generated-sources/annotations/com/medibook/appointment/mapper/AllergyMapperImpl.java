@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-04T18:56:00+0200",
-    comments = "version: 1.5.0.Final, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-03-13T12:22:25+0200",
+    comments = "version: 1.5.0.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
 public class AllergyMapperImpl implements AllergyMapper {
@@ -19,11 +19,13 @@ public class AllergyMapperImpl implements AllergyMapper {
             return null;
         }
 
-        String name = null;
+        String allergy1 = null;
+        long id = 0L;
 
-        name = allergy.getAllergy();
+        allergy1 = allergy.getAllergy();
+        id = allergy.getId();
 
-        AllergyDTO allergyDTO = new AllergyDTO( name );
+        AllergyDTO allergyDTO = new AllergyDTO( allergy1, id );
 
         return allergyDTO;
     }

@@ -1,7 +1,9 @@
 package com.medibook.appointment.service;
 
 import com.medibook.appointment.dto.DoctorDTO;
+import com.medibook.appointment.dto.UpdateProfileDTO;
 import com.medibook.appointment.dto.UserDTO;
+import com.medibook.appointment.dto.UserProfileDTO;
 import com.medibook.appointment.entities.Doctor_Profile;
 import com.medibook.appointment.entities.Role;
 import com.medibook.appointment.entities.User;
@@ -20,10 +22,10 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private UserMapper userMapper;
-    EmailService emailService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
+    private final EmailService emailService;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository,  UserMapper userMapper,  EmailService emailService) {
         this.userRepository = userRepository;
@@ -99,5 +101,40 @@ public class UserService {
         }
         return userDTOs;
     }
+
+    public UserProfileDTO getProfile(String username) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return new UserProfileDTO(
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAddress()
+        );
+    }
+    public UserProfileDTO updateProfile(String username, UpdateProfileDTO dto) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+
+        userRepository.save(user);
+
+        return new UserProfileDTO(
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAddress()
+        );
+    }
+
 
 }

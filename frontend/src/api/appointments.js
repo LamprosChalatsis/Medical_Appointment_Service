@@ -3,10 +3,10 @@ import { api } from "./apiClient";
 const APPOINTMENT_URL = "/appointment";
 
 // Admin-only: Get all appointments
-export const getAllAppointments = async () => {
+export async function getAllAppointments() {
   const res = await api.get(`${APPOINTMENT_URL}/admin/all`);
   return res.data;
-};
+}
 
 // Fetch user's appointments
 export async function getAppointments() {
@@ -33,6 +33,12 @@ export async function fetchDoctorAppointments(doctorId, date) {
 // Cancel
 export async function cancelAppointment(appointmentId) {
   const response = await api.patch(`${APPOINTMENT_URL}/cancel/${appointmentId}`);
+  return response.data;
+}
+
+// Doctor cancels appointment
+export async function cancelAppointmentByDoctor(appointmentId) {
+  const response = await api.patch(`${APPOINTMENT_URL}/doctor/cancel/${appointmentId}`);
   return response.data;
 }
 

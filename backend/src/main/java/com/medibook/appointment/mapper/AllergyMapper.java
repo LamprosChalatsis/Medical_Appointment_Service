@@ -7,6 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AllergyMapper {
-    @Mapping(target = "name", source = "allergy")
+    @Mapping(target = "allergy", source = "allergy")
+    @Mapping(target = "id", source="id")
     AllergyDTO toDTO(Allergy allergy);
 }

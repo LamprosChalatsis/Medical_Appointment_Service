@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-04T18:56:00+0200",
-    comments = "version: 1.5.0.Final, compiler: Eclipse JDT (IDE) 3.45.0.v20260224-0835, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-03-13T12:22:25+0200",
+    comments = "version: 1.5.0.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
 public class SpecialtyMapperImpl implements SpecialtyMapper {
@@ -20,10 +20,14 @@ public class SpecialtyMapperImpl implements SpecialtyMapper {
         }
 
         String name = null;
+        long id = 0L;
 
         name = specialty.getName();
+        if ( specialty.getId() != null ) {
+            id = specialty.getId();
+        }
 
-        SpecialtyDTO specialtyDTO = new SpecialtyDTO( name );
+        SpecialtyDTO specialtyDTO = new SpecialtyDTO( id, name );
 
         return specialtyDTO;
     }

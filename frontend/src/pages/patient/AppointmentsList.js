@@ -32,7 +32,6 @@ export default function AppointmentsList() {
   const handleCancel = async (appointmentId) => {
     try {
       await cancelAppointment(appointmentId);
-
       // Remove the cancelled appointment from the list
       setAppointments((prev) => prev.filter((a) => a.id !== appointmentId));
       setAlertTitle("Success");
