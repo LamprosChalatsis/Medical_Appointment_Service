@@ -19,10 +19,17 @@ export default function DoctorAppointmentsList() {
     const fetchData = async () => {
       try {
         const data = await getAppointments();
-        const normalized = data.map((a) => ({ // Normalize id field
-          ...a,
-          id: a.id || a._id,
-        }));
+        const normalized = data
+          .map((a) => ({
+            ...a,
+            id: a.id || a._id,
+          }))
+          .sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`);
+            const dateB = new Date(`${b.date}T${b.time}`);
+            return dateA - dateB;
+          });
+
         setAppointments(normalized);
       } catch (error) {
         setAlertTitle("Error");
@@ -36,7 +43,6 @@ export default function DoctorAppointmentsList() {
     fetchData();
   }, []);
 
-  // Helper to update appointment status in state
   const updateStatus = (appointmentId, newStatus) => {
     const updated = appointments.map((a) =>
       a.id === appointmentId ? { ...a, status: newStatus } : a
@@ -78,15 +84,85 @@ export default function DoctorAppointmentsList() {
     PENDING: "bg-yellow-100 text-yellow-700",
     CONFIRMED: "bg-green-100 text-green-700",
     CANCELLED: "bg-red-100 text-red-700",
+    COMPLETED: "bg-blue-100 text-blue-700",
   };
+
+  const upcomingAppointments = appointments.filter(
+    (a) => a.status === "PENDING" || a.status === "CONFIRMED"
+  );
+
+  const completedAppointments = appointments.filter(
+    (a) => a.status === "COMPLETED"
+  );
+
+  const cancelledAppointments = appointments.filter(
+    (a) => a.status === "CANCELLED"
+  );
+
+  const renderAppointments = (list) => (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {list.map((appointment) => (
+        <div
+          key={appointment.id}
+          className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 border border-slate-100"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-lg font-semibold text-slate-800">
+                {appointment.date}
+              </p>
+              <p className="text-slate-500 text-sm">{appointment.time}</p>
+            </div>
+
+            <span
+              className={`text-xs font-medium px-3 py-1 rounded-full ${
+                statusStyles[appointment.status] ||
+                "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {appointment.status}
+            </span>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-sm text-slate-600">
+              Patient:
+              <span className="font-medium text-slate-800 ml-1">
+                {appointment.patientName}
+              </span>
+            </p>
+          </div>
+
+          {appointment.status === "PENDING" && (
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => handleAccept(appointment.id)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 rounded-xl transition"
+              >
+                Confirm
+              </button>
+
+              <button
+                onClick={() => handleCancel(appointment.id)}
+                className="flex-1 border border-red-500 text-red-600 hover:bg-red-50 text-sm font-medium py-2 rounded-xl transition"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 
   if (loading) {
     return (
       <MainLayout>
         <LoadingSpinner />
-      </MainLayout> 
+      </MainLayout>
     );
   }
+
   return (
     <MainLayout>
       <AlertDialog
@@ -98,7 +174,6 @@ export default function DoctorAppointmentsList() {
 
       <div className="bg-slate-50 min-h-screen pt-28 pb-16">
         <div className="max-w-6xl mx-auto px-6">
-          {/* Header */}
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-slate-800">
               My Appointments
@@ -113,64 +188,34 @@ export default function DoctorAppointmentsList() {
               No appointments found.
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {appointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 border border-slate-100"
-                >
-                  {/* Date */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-lg font-semibold text-slate-800">
-                        {appointment.date}
-                      </p>
-                      <p className="text-slate-500 text-sm">
-                        {appointment.time}
-                      </p>
-                    </div>
+            <>
+              {upcomingAppointments.length > 0 && (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-700 mb-4">
+                    Upcoming Appointments
+                  </h2>
+                  {renderAppointments(upcomingAppointments)}
+                </>
+              )}
 
-                    <span
-                      className={`text-xs font-medium px-3 py-1 rounded-full ${
-                        statusStyles[appointment.status] ||
-                        "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {appointment.status}
-                    </span>
-                  </div>
+              {completedAppointments.length > 0 && (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-700 mt-12 mb-4">
+                    Completed Appointments
+                  </h2>
+                  {renderAppointments(completedAppointments)}
+                </>
+              )}
 
-                  {/* Patient */}
-                  <div className="mt-4">
-                    <p className="text-sm text-slate-600">
-                      Patient:
-                      <span className="font-medium text-slate-800 ml-1">
-                        {appointment.patientName}
-                      </span>
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  {appointment.status === "PENDING" && (
-                    <div className="flex gap-3 mt-6">
-                      <button
-                        onClick={() => handleAccept(appointment.id)}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 rounded-xl transition"
-                      >
-                        Confirm
-                      </button>
-
-                      <button
-                        onClick={() => handleCancel(appointment.id)}
-                        className="flex-1 border border-red-500 text-red-600 hover:bg-red-50 text-sm font-medium py-2 rounded-xl transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+              {cancelledAppointments.length > 0 && (
+                <>
+                  <h2 className="text-xl font-semibold text-slate-700 mt-12 mb-4">
+                    Cancelled Appointments
+                  </h2>
+                  {renderAppointments(cancelledAppointments)}
+                </>
+              )}
+            </>
           )}
         </div>
       </div>
