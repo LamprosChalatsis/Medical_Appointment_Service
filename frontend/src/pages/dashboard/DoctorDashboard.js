@@ -6,7 +6,6 @@ import { getDoctorDashboardStats } from "../../api/dashboard";
 import { getAppointments } from "../../api/appointments";
 import LoadingSpinner from "../../components/Loading";
 
-
 export default function DoctorDashboard() {
   const [stats, setStats] = useState(null);
   const [appointments, setAppointments] = useState([]);
@@ -22,8 +21,19 @@ export default function DoctorDashboard() {
       const statsData = await getDoctorDashboardStats();
       const appointmentsData = await getAppointments();
 
+      const normalizedAppointments = appointmentsData
+        .map((a) => ({
+          ...a,
+          id: a.id || a._id,
+        }))
+        .sort((a, b) => {
+          const dateA = new Date(`${a.date}T${a.time}`);
+          const dateB = new Date(`${b.date}T${b.time}`);
+          return dateA - dateB;
+        });
+
       setStats(statsData);
-      setAppointments(appointmentsData);
+      setAppointments(normalizedAppointments);
     } catch (error) {
       console.error("Failed to load dashboard data", error);
     } finally {
@@ -31,26 +41,35 @@ export default function DoctorDashboard() {
     }
   };
 
+  const now = new Date();
+
+  const upcomingAppointments = appointments
+    .filter((a) => {
+      const appointmentDateTime = new Date(`${a.date}T${a.time}`);
+      const isUpcoming = appointmentDateTime >= now;
+      const isRelevantStatus =
+        a.status === "PENDING" || a.status === "CONFIRMED";
+
+      return isUpcoming && isRelevantStatus;
+    })
+    .slice(0, 5);
+
+  const filteredAppointments = selectedDate
+    ? appointments.filter((a) => a.date === selectedDate.toISOString().split("T")[0])
+    : upcomingAppointments;
+
   if (loading) {
     return (
       <MainLayout>
         <LoadingSpinner />
-      </MainLayout> 
+      </MainLayout>
     );
   }
-
-  const filteredAppointments = selectedDate
-    ? appointments.filter(
-        (a) => a.date === selectedDate.toISOString().split("T")[0]
-      )
-    : appointments.slice(0, 5);
 
   return (
     <MainLayout>
       <div className="bg-slate-50 h-[calc(100vh-80px)] overflow-hidden pt-10">
         <div className="max-w-7xl mx-auto px-6">
-
-          {/* HEADER */}
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-gray-900">
               Doctor Dashboard
@@ -60,7 +79,6 @@ export default function DoctorDashboard() {
             </p>
           </div>
 
-          {/* STATS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             <StatCard
               title="Total Appointments"
@@ -89,8 +107,6 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100%-160px)]">
-
-            {/* Appointment List */}
             <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-y-auto">
               <h2 className="text-lg font-semibold mb-4">
                 {selectedDate
@@ -100,7 +116,9 @@ export default function DoctorDashboard() {
 
               {filteredAppointments.length === 0 ? (
                 <p className="text-gray-500 text-sm">
-                  No appointments for this date.
+                  {selectedDate
+                    ? "No appointments for this date."
+                    : "No upcoming appointments."}
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -122,7 +140,11 @@ export default function DoctorDashboard() {
                         className={`text-xs px-3 py-1 rounded-full ${
                           a.status === "CONFIRMED"
                             ? "bg-emerald-100 text-emerald-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            : a.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : a.status === "COMPLETED"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-red-100 text-red-700"
                         }`}
                       >
                         {a.status}
@@ -133,7 +155,6 @@ export default function DoctorDashboard() {
               )}
             </div>
 
-            {/* Calendar */}
             <div className="space-y-6">
               <CalendarCard
                 appointments={appointments}
@@ -141,7 +162,6 @@ export default function DoctorDashboard() {
                 setSelectedDate={setSelectedDate}
               />
             </div>
-
           </div>
         </div>
       </div>
