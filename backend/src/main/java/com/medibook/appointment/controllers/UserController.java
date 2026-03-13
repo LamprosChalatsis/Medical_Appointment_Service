@@ -12,6 +12,7 @@ import com.medibook.appointment.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserDTO> getUsers() {
         return userService.getUsersDTO();
     }
@@ -45,6 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{user_id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteUser(@PathVariable Long user_id) {
         boolean result = this.userService.deleteUserById(user_id);
         if (result) {
@@ -73,6 +76,7 @@ public class UserController {
     }
 
     @PatchMapping("/{user_id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> approveUser(@PathVariable Long user_id) {
         Optional<User> optionalUser = userService.getUser(user_id);
         if(optionalUser.isPresent()) {
@@ -87,6 +91,7 @@ public class UserController {
     }
 
     @PostMapping("/{user_id}/roles/{role_id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> addRoleToUser(@PathVariable Long user_id, @PathVariable Long role_id){
         Optional<User> optionalUser = userService.getUser(user_id);
         if(optionalUser.isPresent()) {
@@ -102,6 +107,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{user_id}/roles/{role_id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteRoleFromUser(@PathVariable Long user_id, @PathVariable Long role_id){
         Optional<User> optionalUser = userService.getUser(user_id);
         if(optionalUser.isPresent()) {

@@ -15,7 +15,7 @@ export default function NotificationDropdown({
     await Promise.all(
       notifications.map(n => markNotificationRead(n.id))
     );
-    setNotifications([]); // 🔥 THIS now updates Header state
+    setNotifications([]); 
   };
 
   if (!open) return null;

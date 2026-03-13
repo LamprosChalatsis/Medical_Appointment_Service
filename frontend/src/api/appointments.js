@@ -36,6 +36,12 @@ export async function cancelAppointment(appointmentId) {
   return response.data;
 }
 
+// Doctor cancels appointment
+export async function cancelAppointmentByDoctor(appointmentId) {
+  const response = await api.patch(`${APPOINTMENT_URL}/doctor/cancel/${appointmentId}`);
+  return response.data;
+}
+
 // Confirm
 export async function confirmAppointment(appointmentId) {
   const response = await api.patch(`${APPOINTMENT_URL}/confirm/${appointmentId}`);

@@ -7,6 +7,7 @@ import { Login } from "../../api/auth";
 export default function LogIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
@@ -68,14 +69,22 @@ export default function LogIn() {
           />
         </div>
 
-        <div className="input-container">
+        <div className="input-container password-container">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          <button
+            type="button"
+            className="toggle-password"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
         </div>
 
 
@@ -152,5 +161,24 @@ const StyledWrapper = styled.div`
 
   .signup-link a {
     text-decoration: underline;
+  }
+    .password-container {
+  position: relative;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .toggle-password:hover {
+    color: #111;
   }
 `;

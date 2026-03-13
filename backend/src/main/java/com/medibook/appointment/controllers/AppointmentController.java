@@ -5,6 +5,7 @@ import com.medibook.appointment.dto.AppointmentResponseDTO;
 import com.medibook.appointment.service.AppointmentService;
 import com.medibook.appointment.service.UserDetailsImpl;
 import jakarta.validation.Valid;
+import jdk.jfr.Percentage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,16 +71,20 @@ public class AppointmentController {
         appointmentService.deleteAppointmentById(appointmentId);
         return ResponseEntity.ok(Map.of("message", "Appointment deleted successfully!"));
     }
-
-    @PatchMapping("/cancel/{appointmentId}")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<String> cancelAppointment(
-            @PathVariable Long appointmentId,
-            Authentication authentication
-    ) {
+    @PatchMapping("/cancel/{appointmentId}")
+    public ResponseEntity<String> cancelAppointment(@PathVariable Long appointmentId, Authentication authentication) {
         String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
         appointmentService.cancelAppointment(appointmentId, email);
         return ResponseEntity.ok("Appointment cancelled.");
+    }
+
+    @PatchMapping("/doctor/cancel/{appointmentId}")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<String> doctorCancelAppointment(@PathVariable Long appointmentId, Authentication authentication) {
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+        appointmentService.doctorCancelAppointment(appointmentId, email);
+        return ResponseEntity.ok("Appointment cancelled by doctor.");
     }
 
     @PatchMapping("/confirm/{appointmentId}")

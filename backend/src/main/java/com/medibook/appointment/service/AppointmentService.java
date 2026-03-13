@@ -230,6 +230,39 @@ public class AppointmentService {
     }
 
     @Transactional
+    public void doctorCancelAppointment(Long appointmentId, String currentDoctorEmail) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+
+        User currentDoctor = userService.findUserByEmail(currentDoctorEmail);
+        User appointmentDoctor = appointment.getDoctor().getUser();
+
+        if (!appointmentDoctor.getId().equals(currentDoctor.getId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You cannot cancel this appointment."
+            );
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
+
+        User patient = appointment.getUser();
+
+        String msg = "Dr. " + currentDoctor.getFirstName() + " " + currentDoctor.getLastName()
+                + " cancelled the appointment on " + appointment.getDate()
+                + " at " + appointment.getTime() + ".";
+
+        notificationService.createNotification(patient, msg);
+
+        emailService.sendAppointmentCancelationEmailPatient(
+                patient.getEmail(),
+                appointment.getDate().toString(),
+                appointment.getTime().toString(),
+                currentDoctor.getLastName()
+        );
+    }
+
+    @Transactional
     public void confirmAppointment(Long appointmentId, String currentDoctorEmail) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));

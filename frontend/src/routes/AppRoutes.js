@@ -12,6 +12,7 @@ import DoctorDashboard from "../pages/dashboard/DoctorDashboard";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import AdminAppointments from "../pages/admin/AdminAppointments";
 import ProtectedRoute from "./ProtectedRoutes";
+import Settings from "../pages/settings/SettingsPage";
 
 export default function AppRoutes() {
   return (
@@ -97,6 +98,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
             <AdminAppointments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_PATIENT", "ROLE_DOCTOR", "ROLE_ADMIN"]}>
+            <Settings />
           </ProtectedRoute>
         }
       />
