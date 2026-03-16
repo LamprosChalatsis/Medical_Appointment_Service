@@ -14,7 +14,6 @@ const Alert = ({ message, onClose }) => {
         onClick={(e) => {
           e.stopPropagation(); // prevent bubbling
           if (typeof onClose === 'function') {
-            console.log('Alert: onClose clicked'); // debug log
             onClose();
           }
         }}

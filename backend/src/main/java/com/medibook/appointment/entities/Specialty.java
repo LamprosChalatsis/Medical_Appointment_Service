@@ -30,6 +30,10 @@ public class Specialty {
         this.name = name;
     }
 
+    public Specialty(String name) {
+        this.name = name;
+    }
+
     public List<Doctor_Profile> getDoctors() {
         return doctors;
     }

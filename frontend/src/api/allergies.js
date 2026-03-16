@@ -16,7 +16,6 @@ export async function getPatientAllergies() {
 
 // Add allergy to patient
 export async function addAllergy(allergyid) {
-  console.log("Adding allergy with ID:", allergyid);
   const res = await api.post(`${ALLERGIES_URL}/patient/${allergyid}`);
   return res.data;
 }

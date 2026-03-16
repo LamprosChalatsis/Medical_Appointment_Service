@@ -18,6 +18,10 @@ public class Allergy {
 
     public Allergy() {}
 
+    public Allergy(String allergy) {
+        this.allergy = allergy;
+    }
+
     public Allergy(String allergy, int id, List<Patient_Profile> patientProfiles) {
         this.allergy = allergy;
         this.id = id;

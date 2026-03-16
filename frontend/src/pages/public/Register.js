@@ -58,7 +58,6 @@ export default function RegisterPage() {
         specialtyToSend = name;
       }
       const payload = { ...formData, role: [role], specialty: specialtyToSend, }; // Add role
-      console.log(payload);
       await registerUser(payload);
       setSuccessMessage("Success");
     } catch (err) {
@@ -188,38 +187,6 @@ export default function RegisterPage() {
           className="border rounded-lg p-2 w-full mt-4"
           required
         />
-
-        {/* Doctor-only field */}
-        {role === "DOCTOR" && (
-          <div className="mt-4">
-            <select
-              name="specialty"
-              value={formData.specialty}
-              onChange={handleChange}
-              className="border rounded-lg p-2 w-full"
-              required
-            >
-              <option value="">Select Specialty</option>
-              {specialties.map((s) => (
-                <option key={s.name} value={s.name}>{s.name}</option>
-              ))}
-              <option value="OTHER">Other (Add new)</option>
-            </select>
-
-
-              {formData.specialty === "OTHER" && (
-                <input
-                  type="text"
-                  placeholder="Enter new specialty"
-                  value={newSpecialty}
-                  onChange={(e) => setNewSpecialty(e.target.value)}
-                  className="border rounded-lg p-2 w-full mt-2"
-                  required
-                />
-              )}
-            </div>
-        )}
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white rounded-lg p-2 mt-6 hover:bg-blue-700 transition"
