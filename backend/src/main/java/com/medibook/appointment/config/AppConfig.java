@@ -1,9 +1,16 @@
 package com.medibook.appointment.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.medibook.appointment.entities.Role;
 import com.medibook.appointment.entities.User;
 import com.medibook.appointment.repositories.RoleRepository;
 import com.medibook.appointment.repositories.UserRepository;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -11,12 +18,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.Set;
 
 
 @Configuration
@@ -26,6 +28,15 @@ public class AppConfig {
     private RoleRepository roleRepository;
     private BCryptPasswordEncoder encoder;
 
+    @Value("${app.seed.admin.username:}")
+    private String adminUsername;
+
+    @Value("${app.seed.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.seed.admin.password:}")
+    private String adminPassword;
+
     public AppConfig(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -33,33 +44,61 @@ public class AppConfig {
     }
 
     @Bean
-    public CommandLineRunner createDefaultAdmin() {
-        //Check if admin exists
+    public CommandLineRunner initRolesAndAdmin() {
         return args -> {
-            if (userRepository.findByUsername("admin1").isEmpty()) {
-                System.out.println("Creating default admin user...");
+            System.out.println("Initializing roles...");
 
-                Role adminRole = roleRepository.findByName("ROLE_ADMIN")
-                        .orElseGet(() -> roleRepository.save(new Role("ROLE_ADMIN")));
+            Role userRole = roleRepository.findByName("ROLE_USER")
+                    .orElseGet(() -> {
+                        System.out.println("Creating ROLE_USER");
+                        return roleRepository.save(new Role("ROLE_USER"));
+                    });
 
+            Role patientRole = roleRepository.findByName("ROLE_PATIENT")
+                    .orElseGet(() -> {
+                        System.out.println("Creating ROLE_PATIENT");
+                        return roleRepository.save(new Role("ROLE_PATIENT"));
+                    });
+
+            Role doctorRole = roleRepository.findByName("ROLE_DOCTOR")
+                    .orElseGet(() -> {
+                        System.out.println("Creating ROLE_DOCTOR");
+                        return roleRepository.save(new Role("ROLE_DOCTOR"));
+                    });
+
+            Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+                    .orElseGet(() -> {
+                        System.out.println("Creating ROLE_ADMIN");
+                        return roleRepository.save(new Role("ROLE_ADMIN"));
+                    });
+
+            System.out.println("Role initialization finished.");
+
+            if (adminUsername.isBlank() || adminPassword.isBlank() || adminEmail.isBlank()) {
+                System.out.println("Admin seed skipped: missing configuration.");
+                return;
+            }
+
+            if (userRepository.findByUsername(adminUsername).isEmpty()) {
                 User admin = new User();
-                admin.setUsername("admin1");
-                admin.setEmail("admin1@example.com");
-                admin.setPassword(encoder.encode("admin123"));
-                admin.setLastName("Admin");
-                admin.setFirstName("Admin");
+                admin.setUsername(adminUsername);
+                admin.setEmail(adminEmail);
+                admin.setPassword(encoder.encode(adminPassword));
                 admin.setEnabled(true);
-                admin.setRoles(Set.of(adminRole));
+                admin.getRoles().add(adminRole);
 
                 userRepository.save(admin);
-                System.out.println("Admin created.");
+                System.out.println("Default admin created.");
+            } else {
+                System.out.println("Default admin already exists.");
             }
         };
     }
+
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {return new BCryptPasswordEncoder();}
-
-
+    
     private SecurityScheme createAPIKeyScheme() {
         return new SecurityScheme().type(SecurityScheme.Type.HTTP)
                 .bearerFormat("JWT")
