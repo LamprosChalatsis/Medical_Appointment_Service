@@ -26,7 +26,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_MAIL_HOST: mailhog
       SPRING_MAIL_PORT: 1025
-      JWT_SECRET: dev-secret
+      JWT_SECRET: 8d9f3c4b2a1e7f6d5c4b3a2918171615141312110ffeeddccbb998877665544
     depends_on:
       - db
       - mailhog
