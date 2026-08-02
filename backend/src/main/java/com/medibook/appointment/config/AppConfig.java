@@ -1,9 +1,14 @@
 package com.medibook.appointment.config;
 
+import com.medibook.appointment.entities.Allergy;
+import com.medibook.appointment.entities.Specialty;
+import com.medibook.appointment.repositories.AllergyRepository;
+import com.medibook.appointment.repositories.SpecialtyRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.medibook.appointment.entities.Role;
@@ -19,6 +24,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
+import java.util.List;
 
 
 @Configuration
@@ -94,6 +100,89 @@ public class AppConfig {
             } else {
                 System.out.println("Default admin already exists.");
             }
+        };
+    }
+
+    @Bean
+    @Profile("dev")
+    public CommandLineRunner seedMedicalData(
+            SpecialtyRepository specialtyRepository,
+            AllergyRepository allergyRepository
+    ) {
+        return args -> {
+
+            System.out.println("Seeding specialties and allergies...");
+
+            List<String> specialties = List.of(
+                    "General Medicine",
+                    "Cardiology",
+                    "Dermatology",
+                    "Neurology",
+                    "Pediatrics",
+                    "Orthopedics",
+                    "Psychiatry",
+                    "Radiology",
+                    "Ophthalmology",
+                    "Otolaryngology (ENT)",
+                    "Endocrinology",
+                    "Gastroenterology",
+                    "Pulmonology",
+                    "Nephrology",
+                    "Urology",
+                    "Oncology",
+                    "Hematology",
+                    "Infectious Diseases",
+                    "Rheumatology",
+                    "Allergy & Immunology",
+                    "Plastic Surgery",
+                    "Anesthesiology",
+                    "Emergency Medicine",
+                    "Obstetrics & Gynecology",
+                    "Sports Medicine",
+                    "Geriatrics"
+            );
+
+            for (String name : specialties) {
+                if (specialtyRepository.findByName(name).isEmpty()) {
+                    specialtyRepository.save(new Specialty(name));
+                }
+            }
+
+            List<String> allergies = List.of(
+                    "Peanuts",
+                    "Tree Nuts",
+                    "Shellfish",
+                    "Fish",
+                    "Milk",
+                    "Eggs",
+                    "Soy",
+                    "Wheat",
+                    "Gluten",
+                    "Sesame",
+                    "Penicillin",
+                    "Aspirin",
+                    "Ibuprofen",
+                    "Latex",
+                    "Dust Mites",
+                    "Pollen",
+                    "Pet Dander",
+                    "Mold",
+                    "Bee Stings",
+                    "Wasp Stings",
+                    "Nickel",
+                    "Sulfa Drugs",
+                    "Egg Protein",
+                    "Chocolate",
+                    "Strawberries"
+            );
+
+            for (String name : allergies) {
+                if (allergyRepository.findByAllergy(name).isEmpty()) {
+                    allergyRepository.save(new Allergy(name));
+                }
+            }
+
+            System.out.println("Medical data seeded successfully.");
         };
     }
 

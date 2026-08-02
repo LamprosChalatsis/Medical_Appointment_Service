@@ -137,7 +137,7 @@ export default function PatientDashboard() {
               
               <ActivityList
                 items={appointments.slice(0, 5).map( // Show only the 5 most recent appointments
-                  a => `Appointment ${a.status.toLowerCase()} for ${a.date}` // Format: "Appointment confirmed for 2024-06-15"
+                  a => `Appointment ${a.status.toLowerCase()} for ${a.date}` 
                 )}
               />
             </div>

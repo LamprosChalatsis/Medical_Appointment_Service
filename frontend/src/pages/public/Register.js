@@ -3,8 +3,7 @@ import { registerUser } from "../../api/auth";
 import { useNavigate } from "react-router-dom";
 import SuccessAlert from "../../components/SuccessAlert"
 import FailAlert from "../../components/FailAlert";
-import { fetchSpecialties, createSpecialty } from "../../api/specialties"; // create an API function to fetch specialties
-import { useEffect } from "react";
+
 
 
 export default function RegisterPage() {
@@ -19,46 +18,20 @@ export default function RegisterPage() {
     lastName: "",
     phone: "",
     address: "",
-    specialty: "", // doctor only
   });
   const navigate = useNavigate();
-  const [specialties, setSpecialties] = useState([]);
-  const [newSpecialty, setNewSpecialty] = useState(""); // for "Other"
-
-  useEffect(() => {
-  const loadSpecialties = async () => {
-    try {
-      const data = await fetchSpecialties(); // returns an array like ["CARDIOLOGY", "DERMATOLOGY"]
-      setSpecialties(data);
-    } catch (err) {
-      console.error("Failed to load specialties", err);
-    }
-  };
-
-  loadSpecialties();
-}, []);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
+  };  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let specialtyToSend = formData.specialty;
-
-      if (formData.specialty === "OTHER" && newSpecialty.trim() !== "") {
-        const name = newSpecialty.trim().toUpperCase();
-
-        // Try to create the specialty in backend
-        await createSpecialty(name);
-        specialtyToSend = name;
-      }
-      const payload = { ...formData, role: [role], specialty: specialtyToSend, }; // Add role
-      console.log(payload);
+      const payload = { ...formData, role: [role]}; // Add role
       await registerUser(payload);
       setSuccessMessage("Success");
     } catch (err) {
@@ -188,38 +161,6 @@ export default function RegisterPage() {
           className="border rounded-lg p-2 w-full mt-4"
           required
         />
-
-        {/* Doctor-only field */}
-        {role === "DOCTOR" && (
-          <div className="mt-4">
-            <select
-              name="specialty"
-              value={formData.specialty}
-              onChange={handleChange}
-              className="border rounded-lg p-2 w-full"
-              required
-            >
-              <option value="">Select Specialty</option>
-              {specialties.map((s) => (
-                <option key={s.name} value={s.name}>{s.name}</option>
-              ))}
-              <option value="OTHER">Other (Add new)</option>
-            </select>
-
-
-              {formData.specialty === "OTHER" && (
-                <input
-                  type="text"
-                  placeholder="Enter new specialty"
-                  value={newSpecialty}
-                  onChange={(e) => setNewSpecialty(e.target.value)}
-                  className="border rounded-lg p-2 w-full mt-2"
-                  required
-                />
-              )}
-            </div>
-        )}
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white rounded-lg p-2 mt-6 hover:bg-blue-700 transition"

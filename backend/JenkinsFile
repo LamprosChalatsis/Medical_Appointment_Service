@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE = "ghcr.io/lamproschalatsis/medical-appointment-backend:latest"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('backend') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package'
+                }
+            }
+        }
+
+        stage('Build Docker') {
+            steps {
+                sh 'docker build -t $IMAGE backend'
+            }
+        }
+
+        stage('Push Docker') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'ghcr',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'TOKEN'
+                )]) {
+                    sh '''
+                    echo $TOKEN | docker login ghcr.io -u $USERNAME --password-stdin
+                    docker push $IMAGE
+                    docker logout ghcr.io
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Backend image pushed: ${IMAGE}"
+        }
+        failure {
+            echo 'Backend pipeline failed.'
+        }
+    }
+}

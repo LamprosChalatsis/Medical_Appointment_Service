@@ -15,11 +15,9 @@ import {
 } from "@mui/material";
 import PlaceIcon from "@mui/icons-material/Place";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-
 import AlertDialog from "./SuccessAlert";
 import { fetchSlots } from "../api/availability";
 import { createAppointment } from "../api/appointments";

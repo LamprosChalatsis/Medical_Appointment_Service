@@ -5,9 +5,9 @@ import com.medibook.appointment.entities.Allergy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 
 @Repository
 public interface AllergyRepository extends JpaRepository<Allergy, Long> {
+    Collection<Object> findByAllergy(String name);
 }
