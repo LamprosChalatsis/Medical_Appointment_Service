@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE = "ghcr.io/lamproschalatsis/medical-appointment-frontend:latest"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $IMAGE frontend'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'ghcr',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'TOKEN'
+                )]) {
+                    sh '''
+                    echo $TOKEN | docker login ghcr.io -u $USERNAME --password-stdin
+                    docker push $IMAGE
+                    docker logout ghcr.io
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Frontend image pushed: ${IMAGE}"
+        }
+        failure {
+            echo 'Frontend pipeline failed.'
+        }
+    }
+}
