@@ -1,47 +1,41 @@
 services:
-
   db:
     image: postgres:15
-    container_name: medical_appointments_db
     environment:
       POSTGRES_DB: medical_appointments
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-
+ 
   backend:
-    build: ./backend
-    container_name: medical_appointment_backend
+    image: {{ backend_image }}
     ports:
       - "8081:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/medical_appointments
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_MAIL_HOST: mailhog
       SPRING_MAIL_PORT: 1025
-      JWT_SECRET: 8d9f3c4b2a1e7f6d5c4b3a2918171615141312110ffeeddccbb998877665544
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://{{ ansible_host }}:3000"
     depends_on:
       - db
       - mailhog
-
+ 
   frontend:
-    build: ./frontend
-    container_name: medical_appointment_frontend
+    image: {{ frontend_image }}
     ports:
-      - "3000:3000"
-    environment:
-      REACT_APP_API_URL: http://localhost:8080/api
+      - "3000:80"
     depends_on:
       - backend
-
+ 
   mailhog:
     image: mailhog/mailhog
-    container_name: mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
+ 
+volumes:
+  db_data:
+ 
