@@ -1,5 +1,7 @@
 import axios from "axios";
 
+// Create an Axios instance with a base URL for the API
+// This instance will be used for making API requests throughout the application
 export const api = axios.create({
   baseURL: "http://localhost:8081/api",
 });
