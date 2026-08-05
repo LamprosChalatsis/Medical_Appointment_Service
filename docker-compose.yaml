@@ -7,9 +7,9 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - db_data:/var/lib/postgresql/data
- 
+
   backend:
-    image: {{ backend_image }}
+    build: ./backend
     ports:
       - "8081:8080"
     environment:
@@ -18,24 +18,22 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_MAIL_HOST: mailhog
       SPRING_MAIL_PORT: 1025
-      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://{{ ansible_host }}:3000"
     depends_on:
       - db
       - mailhog
- 
+
   frontend:
-    image: {{ frontend_image }}
+    build: ./frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
- 
+
   mailhog:
     image: mailhog/mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
- 
+
 volumes:
   db_data:
- 
