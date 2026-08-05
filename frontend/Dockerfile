@@ -1,18 +1,13 @@
-FROM node:lts-alpine
-# Set the working directory inside the container
+# Στάδιο 1: build τα static αρχεία της React εφαρμογής
+FROM node:22-alpine AS build
 WORKDIR /app
- 
-# Copy package.json and package-lock.json
 COPY package*.json ./
- 
-# Install dependencies
 RUN npm install
- 
-# Copy the rest of your application files
 COPY . .
- 
-# Expose the port your app runs on
-EXPOSE 3000
- 
-# Define the command to run your app
-CMD ["npm", "start"]
+RUN npm run build
+
+# Στάδιο 2: σέρβιρε τα static αρχεία με nginx (production-ready, όχι dev server)
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
