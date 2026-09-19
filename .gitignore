@@ -4,6 +4,7 @@
 
 # IDE Settings
 .idea/
+.vscode/
 .eclipse/
 .classpath
 .project
@@ -23,8 +24,6 @@ node_modules/
 
 # Environment Files
 .env
-application.properties placeholder=
-application.yml placeholder=
 application.properties.example
 
 # Logs
@@ -68,4 +67,3 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-
