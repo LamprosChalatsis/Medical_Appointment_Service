@@ -68,6 +68,7 @@ public class DashboardController {
 
 
     @GetMapping("/admin/appointments-per-month")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Map<String, Object>> getAppointmentsPerMonth() {
         return dashboardService.getAppointmentsPerMonth();
     }
