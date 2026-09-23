@@ -4,6 +4,7 @@ import com.medibook.appointment.entities.Notification;
 import com.medibook.appointment.entities.User;
 import com.medibook.appointment.repositories.NotificationRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,9 +34,12 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(Long id) {
-        Notification n = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
-        n.setRead(true);
+    public void markAsRead(Long id, Long userId) {
+        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new AccessDeniedException(
+                        "You are not allowed to modify this notification."
+                ));
+
+        notification.setRead(true);
     }
 }
