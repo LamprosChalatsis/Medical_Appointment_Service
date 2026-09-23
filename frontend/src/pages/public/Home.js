@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
-import HeroImage from "../../assets/doctor3.png";
+import HeroImage from "../../assets/Doctor1.png";
+import ApproachImage from "../../assets/Doctor2.png";
 
 const SPECIALTIES = [
   "Cardiology",
@@ -181,7 +182,7 @@ export default function Home() {
           <section className="grid grid-cols-12 gap-6 pb-20 sm:pb-28">
             <div className="col-span-12 overflow-hidden bg-[#C7E5E5] lg:col-span-8">
               <img
-                src={HeroImage}
+                src={ApproachImage}
                 alt="Clinician in a bright practice"
                 loading="lazy"
                 className="h-64 w-full object-cover object-top sm:h-80"
