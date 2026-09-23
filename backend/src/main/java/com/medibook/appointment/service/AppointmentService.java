@@ -6,12 +6,15 @@ import com.medibook.appointment.dto.AppointmentResponseDTO;
 import com.medibook.appointment.entities.*;
 import com.medibook.appointment.mapper.AppointmentMapper;
 import com.medibook.appointment.repositories.AppointmentRepository;
+import com.medibook.appointment.repositories.AvailabilityRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,8 +24,10 @@ import java.util.Optional;
 public class AppointmentService {
 
     private static final Logger logger = LoggerFactory.getLogger(AppointmentService.class);
+    private static final long APPOINTMENT_DURATION_MINUTES = 30;
 
     private final AppointmentRepository appointmentRepository;
+    private final AvailabilityRepository availabilityRepository;
     private final AppointmentMapper appointmentMapper;
     private final UserService userService;
     private final DoctorProfileService doctorProfileService;
@@ -31,6 +36,7 @@ public class AppointmentService {
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
+            AvailabilityRepository availabilityRepository,
             AppointmentMapper appointmentMapper,
             UserService userService,
             DoctorProfileService doctorProfileService,
@@ -38,6 +44,7 @@ public class AppointmentService {
             NotificationService notificationService
     ) {
         this.appointmentRepository = appointmentRepository;
+        this.availabilityRepository = availabilityRepository;
         this.appointmentMapper = appointmentMapper;
         this.userService = userService;
         this.doctorProfileService = doctorProfileService;
@@ -51,6 +58,8 @@ public class AppointmentService {
 
         Doctor_Profile doctor = doctorProfileService.findDoctorProfileById(dto.getDoctorId())
                 .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+
+        validateAppointmentSlot(doctor, dto.getDate(), dto.getTime());
 
         boolean exists = appointmentRepository.existsByDoctorAndDateAndTime(
                 doctor,
@@ -97,6 +106,44 @@ public class AppointmentService {
         );
 
         return getAppointmentResponseDTO(savedAppointment);
+    }
+
+    private void validateAppointmentSlot(Doctor_Profile doctor, LocalDate date, LocalTime time) {
+        if (date == null || time == null) {
+            throw new IllegalArgumentException("Appointment date and time are required.");
+        }
+
+        List<Availability> availabilities =
+                availabilityRepository.findByDoctorIdAndDayOfWeek(
+                        doctor.getId(),
+                        date.getDayOfWeek()
+                );
+
+        boolean validSlot = availabilities.stream().anyMatch(availability -> {
+            LocalTime start = availability.getStartTime();
+            LocalTime end = availability.getEndTime();
+
+            if (start == null || end == null) {
+                return false;
+            }
+
+            LocalTime slotEnd = time.plusMinutes(APPOINTMENT_DURATION_MINUTES);
+
+            boolean insideAvailability =
+                    !time.isBefore(start) && !slotEnd.isAfter(end);
+
+            long minutesFromStart = ChronoUnit.MINUTES.between(start, time);
+            boolean alignedToSchedule = minutesFromStart >= 0
+                    && minutesFromStart % APPOINTMENT_DURATION_MINUTES == 0;
+
+            return insideAvailability && alignedToSchedule;
+        });
+
+        if (!validSlot) {
+            throw new IllegalArgumentException(
+                    "The requested appointment time is not available for this doctor."
+            );
+        }
     }
 
     public void updateAppointment(Long appointmentId, AppointmentRequestDTO newAppointment) {
