@@ -5,7 +5,6 @@ import com.medibook.appointment.dto.AppointmentResponseDTO;
 import com.medibook.appointment.service.AppointmentService;
 import com.medibook.appointment.service.UserDetailsImpl;
 import jakarta.validation.Valid;
-import jdk.jfr.Percentage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,8 +48,13 @@ public class AppointmentController {
     }
 
     @GetMapping("/{appointmentId}")
-    public ResponseEntity<AppointmentResponseDTO> getAppointment(@PathVariable Long appointmentId) {
-        return appointmentService.getAppointmentById(appointmentId)
+    public ResponseEntity<AppointmentResponseDTO> getAppointment(
+            @PathVariable Long appointmentId,
+            Authentication authentication
+    ) {
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+
+        return appointmentService.getAppointmentByIdForUser(appointmentId, email)
                 .map(appointmentService::getAppointmentResponseDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -59,9 +63,11 @@ public class AppointmentController {
     @PutMapping("/{appointmentId}")
     public ResponseEntity<Map<String, String>> updateAppointment(
             @PathVariable Long appointmentId,
-            @Valid @RequestBody AppointmentRequestDTO dto
+            @Valid @RequestBody AppointmentRequestDTO dto,
+            Authentication authentication
     ) {
-        appointmentService.updateAppointment(appointmentId, dto);
+        String email = ((UserDetailsImpl) authentication.getPrincipal()).getEmail();
+        appointmentService.updateAppointment(appointmentId, dto, email);
         return ResponseEntity.ok(Map.of("message", "Appointment updated successfully!"));
     }
 

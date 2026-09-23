@@ -99,9 +99,9 @@ public class AppointmentService {
         return getAppointmentResponseDTO(savedAppointment);
     }
 
-    public void updateAppointment(Long appointmentId, AppointmentRequestDTO newAppointment) {
-        Appointment appointment = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+    @Transactional
+    public void updateAppointment(Long appointmentId, AppointmentRequestDTO newAppointment, String currentUserEmail) {
+        Appointment appointment = getAppointmentForUser(appointmentId, currentUserEmail);
 
         appointment.setDate(newAppointment.getDate());
         appointment.setDescription(newAppointment.getDescription());
@@ -121,6 +121,40 @@ public class AppointmentService {
 
     public Optional<Appointment> getAppointmentById(Long appointmentId) {
         return appointmentRepository.findById(appointmentId);
+    }
+
+    @Transactional
+    public Optional<Appointment> getAppointmentByIdForUser(Long appointmentId, String currentUserEmail) {
+        return Optional.of(getAppointmentForUser(appointmentId, currentUserEmail));
+    }
+
+    private Appointment getAppointmentForUser(Long appointmentId, String currentUserEmail) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+
+        User currentUser = userService.findUserByEmail(currentUserEmail);
+        if (!canAccessAppointment(appointment, currentUser)) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You are not allowed to access this appointment."
+            );
+        }
+
+        return appointment;
+    }
+
+    private boolean canAccessAppointment(Appointment appointment, User currentUser) {
+        if (SecurityUtils.hasRole(currentUser, "ROLE_ADMIN")) {
+            return true;
+        }
+
+        if (appointment.getUser() != null
+                && appointment.getUser().getId().equals(currentUser.getId())) {
+            return true;
+        }
+
+        return appointment.getDoctor() != null
+                && appointment.getDoctor().getUser() != null
+                && appointment.getDoctor().getUser().getId().equals(currentUser.getId());
     }
 
     public List<Appointment> getAppointmentsByPatient(User user) {
