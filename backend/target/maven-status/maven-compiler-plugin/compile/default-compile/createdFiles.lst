@@ -82,6 +82,7 @@ com\medibook\appointment\mapper\SpecialtyMapper.class
 com\medibook\appointment\repositories\DoctorProfileRepository.class
 com\medibook\appointment\mapper\DoctorMapperImpl.class
 com\medibook\appointment\dto\DoctorDashboardStatsDTO.class
+com\medibook\appointment\service\AppointmentStatusScheduler.class
 com\medibook\appointment\config\AuthTokenFilter.class
 com\medibook\appointment\controllers\UserController.class
 com\medibook\appointment\controllers\PatientController.class

@@ -8,7 +8,7 @@ export default function MainLayout({ children }) {
 
       <div className="relative z-10">
         <Header />
-        <main className="pt-16">{children}</main>
+        <main className="pt-20">{children}</main>
       </div>
     </div>
   );
