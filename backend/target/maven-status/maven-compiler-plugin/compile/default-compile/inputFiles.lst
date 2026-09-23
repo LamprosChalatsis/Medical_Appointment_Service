@@ -72,6 +72,7 @@ C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\repositories\UserRepository.java
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\AllergyService.java
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\AppointmentService.java
+C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\AppointmentStatusScheduler.java
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\AuthService.java
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\AvailabilityService.java
 C:\HUA\Year 3\Semester 6\DevOps\Project\Medical_Appointment_Service\backend\src\main\java\com\medibook\appointment\service\DashboardService.java

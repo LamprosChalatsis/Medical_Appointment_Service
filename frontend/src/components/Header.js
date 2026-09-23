@@ -1,6 +1,6 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { BellIcon } from "@heroicons/react/24/outline";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/MediBookLogo.png";
 import ProfilePic from "../assets/Profile.jpg";
 import { isLoggedIn } from "../utils/auth";
@@ -13,24 +13,53 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+function getRole() {
+  try {
+    const roles = JSON.parse(localStorage.getItem("roles") || "[]");
+    return roles[0] || localStorage.getItem("role");
+  } catch {
+    return localStorage.getItem("role");
+  }
+}
+
+const NAV_BY_ROLE = {
+  ROLE_PATIENT: [
+    { name: "Doctors", href: "/doctors" },
+    { name: "My Appointments", href: "/appointments" },
+  ],
+  ROLE_DOCTOR: [
+    { name: "Manage Appointments", href: "/doctor-appointments" },
+    { name: "Availability", href: "/availability" },
+  ],
+  ROLE_ADMIN: [{ name: "Users", href: "/users" }],
+};
+
+const DASHBOARD_ROUTE = {
+  ROLE_PATIENT: "/dashboard/patient",
+  ROLE_DOCTOR: "/dashboard/doctor",
+  ROLE_ADMIN: "/dashboard/admin",
+};
+
 export default function Header() {
   const navigate = useNavigate();
   const loggedIn = isLoggedIn();
+  const role = getRole();
 
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  const roles = JSON.parse(localStorage.getItem("roles") || "[]");
-  const role = roles[0] || localStorage.getItem("role");
 
   // Load notifications
   useEffect(() => {
     if (!loggedIn) return;
 
     const load = async () => {
-      const data = await fetchUnreadNotifications();
-      setNotifications(data);
+      try {
+        const data = await fetchUnreadNotifications();
+        setNotifications(Array.isArray(data) ? data : []);
+      } catch {
+        setNotifications([]);
+      }
     };
 
     load();
@@ -47,76 +76,66 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const navByRole = {
-    ROLE_PATIENT: [
-      { name: "Doctors", href: "/doctors" },
-      { name: "My Appointments", href: "/appointments" },
-    ],
-    ROLE_DOCTOR: [
-      { name: "Manage Appointments", href: "/doctor-appointments" },
-      { name: "Availability", href: "/availability" },
-    ],
-    ROLE_ADMIN: [
-      { name: "Users", href: "/users" },
-    ],
-  };
-
-  const dashboardRoute = {
-    ROLE_PATIENT: "/dashboard/patient",
-    ROLE_DOCTOR: "/dashboard/doctor",
-    ROLE_ADMIN: "/dashboard/admin",
-  };
-
-  const navigation = loggedIn ? (navByRole[role] || []) : [];
+  const navigation = loggedIn ? NAV_BY_ROLE[role] || [] : [];
+  const dashboardHref = DASHBOARD_ROUTE[role] || "/dashboard";
 
   const handleLogout = () => {
     Logout();
     navigate("/login");
   };
 
-  return (
-    <nav className="fixed top-0 w-full z-50 bg-slate-950/85 backdrop-blur-md border-b border-white/10 shadow-sm">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="flex h-20 items-center justify-between">
+  const menuItemClass = (focus) =>
+    classNames(
+      focus ? "bg-[#F5F9FA] text-[#0C2340]" : "text-[#0C2340]/80",
+      "block w-full px-4 py-3 text-left text-sm"
+    );
 
+  return (
+    <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-[#0C2340]/95 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <div className="flex h-20 items-center justify-between">
           {/* LEFT SIDE */}
           <div className="flex items-center gap-8">
-
             {/* LOGO */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex shrink-0 items-center">
               <img
                 src={Logo}
-                alt="MediBook Logo"
-                className="h-16 sm:h-20 w-auto scale-110"
-
+                alt="MediBook"
+                className="h-16 w-auto sm:h-20"
               />
             </Link>
 
-            {/* NAVIGATION */}
-            {loggedIn && (
-              <div className="flex items-center gap-2">
+            {/* NAVIGATION (desktop) */}
+            {loggedIn && navigation.length > 0 && (
+              <div className="hidden items-center gap-1 md:flex">
                 {navigation.map((item) => (
-                  <Link
+                  <NavLink
                     key={item.name}
                     to={item.href}
-                    className="text-slate-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-xl text-sm font-medium transition"
+                    className={({ isActive }) =>
+                      classNames(
+                        "border-b-2 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition-colors",
+                        isActive
+                          ? "border-[#2D8A9E] text-white"
+                          : "border-transparent text-[#F5F9FA]/70 hover:text-white"
+                      )
+                    }
                   >
                     {item.name}
-                  </Link>
+                  </NavLink>
                 ))}
               </div>
             )}
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center gap-4">
-
+          <div className="flex items-center gap-3 sm:gap-4">
             {loggedIn ? (
               <>
                 {/* Dashboard Button */}
                 <Link
-                  to={dashboardRoute[role] || "/dashboard"}
-                  className="hidden sm:inline-flex bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow"
+                  to={dashboardHref}
+                  className="hidden bg-[#2D8A9E] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#257485] sm:inline-flex"
                 >
                   Dashboard
                 </Link>
@@ -124,12 +143,14 @@ export default function Header() {
                 {/* Notifications */}
                 <div className="relative" ref={dropdownRef}>
                   <button
+                    type="button"
+                    aria-label="Notifications"
                     onClick={() => setDropdownOpen((prev) => !prev)}
-                    className="relative p-2 rounded-xl text-slate-200 hover:text-white hover:bg-white/10 transition"
+                    className="relative p-2 text-[#F5F9FA]/80 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <BellIcon className="h-6 w-6" />
                     {notifications.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                      <span className="absolute -right-0.5 -top-0.5 min-w-[1.25rem] rounded-full bg-[#2D8A9E] px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none text-white">
                         {notifications.length}
                       </span>
                     )}
@@ -144,61 +165,74 @@ export default function Header() {
 
                 {/* Profile Menu */}
                 <Menu as="div" className="relative">
-                  <MenuButton className="flex rounded-full ring-1 ring-white/10 hover:ring-white/20 transition">
+                  <MenuButton
+                    aria-label="Account menu"
+                    className="flex rounded-full ring-1 ring-white/20 transition hover:ring-[#2D8A9E]"
+                  >
                     <img
                       src={ProfilePic}
                       alt="User avatar"
-                      className="h-10 w-10 rounded-full object-cover"
+                      className="h-9 w-9 rounded-full object-cover"
                     />
                   </MenuButton>
 
-                  <MenuItems className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                  <MenuItems className="absolute right-0 z-50 mt-3 w-56 overflow-hidden border border-[#0C2340]/10 bg-white shadow-xl focus:outline-none">
+                    {/* Mobile-only links */}
+                    <div className="md:hidden">
+                      {navigation.map((item) => (
+                        <MenuItem key={item.name}>
+                          {({ focus }) => (
+                            <Link to={item.href} className={menuItemClass(focus)}>
+                              {item.name}
+                            </Link>
+                          )}
+                        </MenuItem>
+                      ))}
+                      <div className="border-t border-[#0C2340]/10" />
+                    </div>
 
-                {/* Settings */}
-                <MenuItem>
-                  {({ focus }) => (
-                    <Link
-                      to="/settings"
-                      className={classNames(
-                        focus ? "bg-gray-50" : "",
-                        "block px-4 py-3 text-sm text-gray-700"
+                    <div className="sm:hidden">
+                      <MenuItem>
+                        {({ focus }) => (
+                          <Link to={dashboardHref} className={menuItemClass(focus)}>
+                            Dashboard
+                          </Link>
+                        )}
+                      </MenuItem>
+                    </div>
+
+                    <MenuItem>
+                      {({ focus }) => (
+                        <Link to="/settings" className={menuItemClass(focus)}>
+                          Settings
+                        </Link>
                       )}
-                    >
-                      Settings
-                    </Link>
-                  )}
-                </MenuItem>
+                    </MenuItem>
 
-                {/* Divider */}
-                <div className="border-t border-gray-100" />
+                    <div className="border-t border-[#0C2340]/10" />
 
-                {/* Sign Out */}
-                <MenuItem>
-                  {({ focus }) => (
-                    <button
-                      onClick={handleLogout}
-                      className={classNames(
-                        focus ? "bg-gray-50" : "",
-                        "block w-full text-left px-4 py-3 text-sm text-gray-700"
+                    <MenuItem>
+                      {({ focus }) => (
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className={menuItemClass(focus)}
+                        >
+                          Sign out
+                        </button>
                       )}
-                    >
-                      Sign out
-                    </button>
-                  )}
-                </MenuItem>
-
-              </MenuItems>
+                    </MenuItem>
+                  </MenuItems>
                 </Menu>
               </>
             ) : (
               <Link
                 to="/login"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition shadow"
+                className="bg-[#2D8A9E] px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#257485]"
               >
                 Login
               </Link>
             )}
-
           </div>
         </div>
       </div>

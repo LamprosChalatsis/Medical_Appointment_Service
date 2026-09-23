@@ -9,7 +9,8 @@ services:
       - db_data:/var/lib/postgresql/data
  
   backend:
-    image: {{ backend_image }}
+    build: ./backend
+    # image: {{ backend_image }}
     ports:
       - "8081:8080"
     environment:
@@ -24,7 +25,8 @@ services:
       - mailhog
  
   frontend:
-    image: {{ frontend_image }}
+    build: ./frontend
+    # image: {{ frontend_image }}
     ports:
       - "3000:80"
     depends_on:
